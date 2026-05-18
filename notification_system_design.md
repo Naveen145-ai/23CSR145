@@ -1,46 +1,49 @@
-# Notification System
+# System Design
 
-Simple notification system that ranks and shows top 10 notifications to students.
+What I built and how it works.
 
-## How It Works
+## Notification API
 
-**Endpoint:** GET `/api/notifications/top-10?studentId=1042`
+The notification system shows students their 10 most important notifications.
 
-Returns 10 notifications ranked by:
-1. Type (Placement = 8 points, Result = 10 points, Event = 3 points)
-2. Read status (Unread gets +3 bonus)
+## How I Built It
 
-**Example Response:**
-```json
-[
-  {"rank": 1, "message": "Placement drive Friday", "type": "Placement", "priority": 11},
-  {"rank": 2, "message": "Results posted", "type": "Result", "priority": 13},
-  {"rank": 3, "message": "Tech talk today", "type": "Event", "priority": 6}
-]
+1. Created an endpoint: GET `/api/notifications/top-10?studentId=1042`
+2. Added logic to rank notifications by type and read status
+3. Return top 10 ranked by priority
+
+## Priority Logic
+
+I decided:
+- Placement news: 8 points (important for job search)
+- Result news: 10 points (most important - grades)
+- Event news: 3 points (less important)
+- Unread messages: +3 bonus
+- Read messages: no bonus
+
+So unread result = 10 + 3 = 13 (highest priority)
+
+## Example
+
+Request: `GET /api/notifications/top-10?studentId=1042`
+
+Response shows:
+```
+Rank 1: "Result posted" (Result, unread) = 13
+Rank 2: "Job fair Friday" (Placement, unread) = 11  
+Rank 3: "Tech talk" (Event, read) = 3
+...
 ```
 
-## Priority Calculation
+## Vehicle Scheduler
 
-- Placement messages: 8 points
-- Result messages: 10 points  
-- Event messages: 3 points
-- Unread: +3 bonus
-- Read: no bonus
+Similar approach - picks best maintenance tasks within time available.
 
-Priority = Type Score + (3 if unread, 0 if read)
+Uses optimization algorithm to maximize work done in available hours.
 
-## Future Improvements
+## Code Files
 
-Could add:
-- Database caching for faster loads
-- Pagination for more notifications
-- Email notifications to students
-- Retry system for failed sends
-| Result declared | Result | false | (10 × 1.0) + 3 | 13 |
-| Workshop | Event | true | (3 × 1.0) + 0 | 3 |
-| Interview | Placement | true | (8 × 1.0) + 0 | 8 |
-
----
-
-## Implementation
-See `notification_app_be/prioritizer.js` for implementation details.
+- `prioritizer.js` - Ranks notifications
+- `optimizer.js` - Picks best tasks
+- `logger.js` - Logs all activities
+- `server.js` - Main API server
