@@ -3,22 +3,22 @@ const axios = require('axios');
 const LOG_API = 'http://4.224.186.213/evaluation-service/logs';
 
 async function log(stack, level, packageName, message) {
-  const validStacks = ['backend', 'frontend'];
-  const validLevels = ['debug', 'info', 'warn', 'error', 'fatal'];
-  const validPackages = ['cache', 'controller', 'cron_job', 'db', 'domain', 'route', 'service'];
+  const allowedStacks = ['backend', 'frontend'];
+  const allowedLevels = ['debug', 'info', 'warn', 'error', 'fatal'];
+  const allowedPackages = ['cache', 'controller', 'cron_job', 'db', 'domain', 'route', 'service'];
 
-  if (!validStacks.includes(stack)) {
-    console.error(` Invalid stack: ${stack}. Must be: ${validStacks.join(', ')}`);
+  if (!allowedStacks.includes(stack)) {
+    console.error(`Stack error: ${stack}. Accepted: ${allowedStacks.join(', ')}`);
     return;
   }
 
-  if (!validLevels.includes(level)) {
-    console.error(` Invalid level: ${level}. Must be: ${validLevels.join(', ')}`);
+  if (!allowedLevels.includes(level)) {
+    console.error(`Level error: ${level}. Accepted: ${allowedLevels.join(', ')}`);
     return;
   }
 
-  if (!validPackages.includes(packageName)) {
-    console.error(` Invalid package: ${packageName}. Must be: ${validPackages.join(', ')}`);
+  if (!allowedPackages.includes(packageName)) {
+    console.error(`Package error: ${packageName}. Accepted: ${allowedPackages.join(', ')}`);
     return;
   }
 

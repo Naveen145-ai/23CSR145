@@ -1,35 +1,35 @@
 function calculatePriority(notifications) {
-  const typeWeights = {
+  const categoryScores = {
     'Result': 10,
     'Placement': 8,
     'Event': 3
   };
 
-  const withPriority = notifications.map(n => {
-    const typeScore = (typeWeights[n.Type] || 1) * 1.0;
-    const unreadBonus = !n.isRead ? 3 : 0;
-    const priority = typeScore + unreadBonus;
+  const rankedNotifications = notifications.map(notification => {
+    const categoryScore = (categoryScores[notification.Type] || 1) * 1.0;
+    const readBonus = !notification.isRead ? 3 : 0;
+    const finalPriority = categoryScore + readBonus;
 
     return {
       rank: 0,
-      message: n.Message,
-      type: n.Type,
-      priority: parseFloat(priority.toFixed(2))
+      message: notification.Message,
+      type: notification.Type,
+      priority: parseFloat(finalPriority.toFixed(2))
     };
   });
 
-  return withPriority;
+  return rankedNotifications;
 }
 
 function getTopNotifications(notifications, topCount = 10) {
-  const withPriority = calculatePriority(notifications);
+  const rankedNotifications = calculatePriority(notifications);
   
-  const topN = withPriority
+  const topTenList = rankedNotifications
     .sort((a, b) => b.priority - a.priority)
     .slice(0, topCount)
-    .map((n, i) => ({ ...n, rank: i + 1 }));
+    .map((item, index) => ({ ...item, rank: index + 1 }));
 
-  return topN;
+  return topTenList;
 }
 
 module.exports = {

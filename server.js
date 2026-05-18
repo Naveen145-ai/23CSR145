@@ -15,22 +15,22 @@ app.post('/api/vehicle-scheduling/optimize', async (req, res) => {
   try {
     const { depotId, availableHours } = req.body;
     
-    logger.info('controller', `Optimizing depot ${depotId}`);
+    logger.info('controller', `Optimizing location ${depotId}`);
 
     const vehicles = [
       {
         DepotID: 1,
         Tasks: [
-          { TaskID: 'T001', Duration: 3, Impact: 50 },
-          { TaskID: 'T002', Duration: 5, Impact: 80 },
-          { TaskID: 'T003', Duration: 2, Impact: 30 }
+          { TaskID: 'OIL_CHANGE', Duration: 3, Impact: 50 },
+          { TaskID: 'BRAKE_SERVICE', Duration: 5, Impact: 80 },
+          { TaskID: 'FILTER_REPLACE', Duration: 2, Impact: 30 }
         ]
       },
       {
         DepotID: 2,
         Tasks: [
-          { TaskID: 'T004', Duration: 4, Impact: 60 },
-          { TaskID: 'T005', Duration: 6, Impact: 100 }
+          { TaskID: 'TIRE_ROTATION', Duration: 4, Impact: 60 },
+          { TaskID: 'ENGINE_CHECK', Duration: 6, Impact: 100 }
         ]
       }
     ];
@@ -42,46 +42,46 @@ app.post('/api/vehicle-scheduling/optimize', async (req, res) => {
       .flatMap(v => v.Tasks || []);
 
     if (tasks.length === 0) {
-      logger.warn('route', `No tasks found for depot ${depotId}`);
+      logger.warn('route', `No tasks found at location ${depotId}`);
       return res.json({ selectedTasks: [], totalImpact: 0, totalHours: 0 });
     }
 
-    logger.info('service', `Found ${tasks.length} tasks`);
+    logger.info('service', `Found ${tasks.length} maintenance tasks`);
 
-    const n = tasks.length;
-    const capacity = Math.floor(availableHours);
-    const dp = Array(n + 1).fill(null).map(() => Array(capacity + 1).fill(0));
+    const taskCount = tasks.length;
+    const maxCapacity = Math.floor(availableHours);
+    const matrix = Array(taskCount + 1).fill(null).map(() => Array(maxCapacity + 1).fill(0));
 
-    for (let i = 1; i <= n; i++) {
-      const task = tasks[i - 1];
+    for (let row = 1; row <= taskCount; row++) {
+      const task = tasks[row - 1];
       const duration = task.Duration;
       const impact = task.Impact;
 
-      for (let w = 0; w <= capacity; w++) {
-        dp[i][w] = dp[i - 1][w];
-        if (duration <= w) {
-          dp[i][w] = Math.max(dp[i][w], dp[i - 1][w - duration] + impact);
+      for (let col = 0; col <= maxCapacity; col++) {
+        matrix[row][col] = matrix[row - 1][col];
+        if (duration <= col) {
+          matrix[row][col] = Math.max(matrix[row][col], matrix[row - 1][col - duration] + impact);
         }
       }
     }
 
     const selectedTasks = [];
-    let w = capacity;
-    for (let i = n; i > 0 && w > 0; i--) {
-      if (dp[i][w] !== dp[i - 1][w]) {
-        const task = tasks[i - 1];
+    let remainingCapacity = maxCapacity;
+    for (let row = taskCount; row > 0 && remainingCapacity > 0; row--) {
+      if (matrix[row][remainingCapacity] !== matrix[row - 1][remainingCapacity]) {
+        const task = tasks[row - 1];
         selectedTasks.push({ TaskID: task.TaskID, Duration: task.Duration, Impact: task.Impact });
-        w -= task.Duration;
+        remainingCapacity -= task.Duration;
       }
     }
 
     const response = {
       selectedTasks,
-      totalImpact: dp[n][capacity],
-      totalHours: availableHours - w
+      totalImpact: matrix[taskCount][maxCapacity],
+      totalHours: availableHours - remainingCapacity
     };
 
-    logger.info('service', `Optimization complete: ${selectedTasks.length} tasks selected`);
+    logger.info('service', `Scheduled ${selectedTasks.length} tasks successfully`);
 
     res.json(response);
 
@@ -103,18 +103,18 @@ app.get('/api/notifications/top-10', async (req, res) => {
     }
 
     const allNotifications = [
-      { Message: 'Placement drive scheduled', Type: 'Placement', isRead: false },
-      { Message: 'Result declared', Type: 'Result', isRead: false },
-      { Message: 'Campus event', Type: 'Event', isRead: true },
-      { Message: 'Interview scheduled', Type: 'Placement', isRead: false },
-      { Message: 'Mark sheet available', Type: 'Result', isRead: true },
-      { Message: 'Workshop registration open', Type: 'Event', isRead: false },
-      { Message: 'Final placement list', Type: 'Placement', isRead: true },
-      { Message: 'Grade correction submitted', Type: 'Result', isRead: false },
-      { Message: 'Seminar alert', Type: 'Event', isRead: false },
-      { Message: 'Internship opportunity', Type: 'Placement', isRead: false },
-      { Message: 'Exam schedule released', Type: 'Result', isRead: false },
-      { Message: 'Hackathon registration', Type: 'Event', isRead: true }
+      { Message: 'Job fair this Friday', Type: 'Placement', isRead: false },
+      { Message: 'Semester marks uploaded', Type: 'Result', isRead: false },
+      { Message: 'Tech talk at 3pm', Type: 'Event', isRead: true },
+      { Message: 'Company interview call', Type: 'Placement', isRead: false },
+      { Message: 'Transcript ready', Type: 'Result', isRead: true },
+      { Message: 'Coding competition open', Type: 'Event', isRead: false },
+      { Message: 'Selected for offer', Type: 'Placement', isRead: true },
+      { Message: 'Grade appeal processed', Type: 'Result', isRead: false },
+      { Message: 'Guest speaker visit', Type: 'Event', isRead: false },
+      { Message: 'Internship at Google', Type: 'Placement', isRead: false },
+      { Message: 'Final exams schedule', Type: 'Result', isRead: false },
+      { Message: 'Hackfest signup live', Type: 'Event', isRead: true }
     ];
 
     logger.info('service', `Retrieved ${allNotifications.length} notifications`);

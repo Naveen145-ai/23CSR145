@@ -3,42 +3,42 @@ function optimizeTasks(tasks, availableHours) {
     return { selectedTasks: [], totalImpact: 0, totalHours: 0 };
   }
 
-  const n = tasks.length;
-  const capacity = Math.floor(availableHours);
+  const taskCount = tasks.length;
+  const maxCapacity = Math.floor(availableHours);
   
-  const dp = Array(n + 1).fill(null).map(() => Array(capacity + 1).fill(0));
+  const matrix = Array(taskCount + 1).fill(null).map(() => Array(maxCapacity + 1).fill(0));
 
-  for (let i = 1; i <= n; i++) {
-    const task = tasks[i - 1];
-    const duration = task.Duration;
-    const impact = task.Impact;
+  for (let row = 1; row <= taskCount; row++) {
+    const currentTask = tasks[row - 1];
+    const taskDuration = currentTask.Duration;
+    const taskImpact = currentTask.Impact;
 
-    for (let w = 0; w <= capacity; w++) {
-      dp[i][w] = dp[i - 1][w];
-      if (duration <= w) {
-        dp[i][w] = Math.max(dp[i][w], dp[i - 1][w - duration] + impact);
+    for (let col = 0; col <= maxCapacity; col++) {
+      matrix[row][col] = matrix[row - 1][col];
+      if (taskDuration <= col) {
+        matrix[row][col] = Math.max(matrix[row][col], matrix[row - 1][col - taskDuration] + taskImpact);
       }
     }
   }
 
   const selectedTasks = [];
-  let w = capacity;
-  for (let i = n; i > 0 && w > 0; i--) {
-    if (dp[i][w] !== dp[i - 1][w]) {
-      const task = tasks[i - 1];
+  let remainingCapacity = maxCapacity;
+  for (let row = taskCount; row > 0 && remainingCapacity > 0; row--) {
+    if (matrix[row][remainingCapacity] !== matrix[row - 1][remainingCapacity]) {
+      const currentTask = tasks[row - 1];
       selectedTasks.push({
-        TaskID: task.TaskID,
-        Duration: task.Duration,
-        Impact: task.Impact
+        TaskID: currentTask.TaskID,
+        Duration: currentTask.Duration,
+        Impact: currentTask.Impact
       });
-      w -= task.Duration;
+      remainingCapacity -= currentTask.Duration;
     }
   }
 
   return {
     selectedTasks: selectedTasks,
-    totalImpact: dp[n][capacity],
-    totalHours: availableHours - w
+    totalImpact: matrix[taskCount][maxCapacity],
+    totalHours: availableHours - remainingCapacity
   };
 }
 
