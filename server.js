@@ -11,14 +11,12 @@ app.use(logger.expressMiddleware());
 
 logger.info('controller', 'Backend server initializing');
 
-// === VEHICLE SCHEDULER ENDPOINT ===
 app.post('/api/vehicle-scheduling/optimize', async (req, res) => {
   try {
     const { depotId, availableHours } = req.body;
     
     logger.info('controller', `Optimizing depot ${depotId}`);
 
-    // Mock vehicles data (for testing without auth token)
     const vehicles = [
       {
         DepotID: 1,
@@ -39,7 +37,6 @@ app.post('/api/vehicle-scheduling/optimize', async (req, res) => {
 
     logger.info('service', `Fetched ${vehicles.length} vehicles`);
 
-    // Get tasks for this depot
     const tasks = vehicles
       .filter(v => v.DepotID === depotId)
       .flatMap(v => v.Tasks || []);
@@ -51,7 +48,6 @@ app.post('/api/vehicle-scheduling/optimize', async (req, res) => {
 
     logger.info('service', `Found ${tasks.length} tasks`);
 
-    // Dynamic Programming Knapsack
     const n = tasks.length;
     const capacity = Math.floor(availableHours);
     const dp = Array(n + 1).fill(null).map(() => Array(capacity + 1).fill(0));
@@ -69,7 +65,6 @@ app.post('/api/vehicle-scheduling/optimize', async (req, res) => {
       }
     }
 
-    // Backtrack to find selected tasks
     const selectedTasks = [];
     let w = capacity;
     for (let i = n; i > 0 && w > 0; i--) {
@@ -96,7 +91,6 @@ app.post('/api/vehicle-scheduling/optimize', async (req, res) => {
   }
 });
 
-// === NOTIFICATIONS TOP 10 ENDPOINT ===
 app.get('/api/notifications/top-10', async (req, res) => {
   try {
     const { studentId } = req.query;
@@ -108,8 +102,6 @@ app.get('/api/notifications/top-10', async (req, res) => {
       return res.status(400).json({ error: 'studentId required' });
     }
 
-    // Fetch notifications from external API
-    // Mock notifications data (for testing without auth token)
     const allNotifications = [
       { Message: 'Placement drive scheduled', Type: 'Placement', isRead: false },
       { Message: 'Result declared', Type: 'Result', isRead: false },
@@ -127,7 +119,6 @@ app.get('/api/notifications/top-10', async (req, res) => {
 
     logger.info('service', `Retrieved ${allNotifications.length} notifications`);
 
-    // Calculate priority for each
     const withPriority = allNotifications.map(n => {
       const typeWeights = { 'Result': 10, 'Placement': 8, 'Event': 3 };
       const typeScore = (typeWeights[n.Type] || 1) * 1.0;
@@ -142,7 +133,6 @@ app.get('/api/notifications/top-10', async (req, res) => {
       };
     });
 
-    // Sort by priority and get top 10
     const topTen = withPriority
       .sort((a, b) => b.priority - a.priority)
       .slice(0, 10)
@@ -158,7 +148,6 @@ app.get('/api/notifications/top-10', async (req, res) => {
   }
 });
 
-// Error handling
 app.use((err, req, res, next) => {
   logger.error('route', err.message);
   res.status(500).json({ error: err.message });
@@ -169,7 +158,6 @@ app.use((req, res) => {
   res.status(404).json({ error: 'Not found' });
 });
 
-// Server startup
 app.listen(PORT, () => {
   logger.info('controller', `Backend server started on port ${PORT}`);
   console.log(`\n✅ Server running on http://localhost:${PORT}\n`);

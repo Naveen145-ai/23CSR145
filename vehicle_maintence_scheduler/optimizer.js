@@ -1,14 +1,3 @@
-/**
- * Vehicle Maintenance Scheduler - Dynamic Programming Knapsack Algorithm
- * Optimizes vehicle maintenance tasks based on available hours
- */
-
-/**
- * Optimize vehicle maintenance tasks using 0/1 Knapsack algorithm
- * @param {Array} tasks - List of tasks [{TaskID, Duration, Impact}]
- * @param {number} availableHours - Total hours available for maintenance
- * @returns {Object} {selectedTasks, totalImpact, totalHours}
- */
 function optimizeTasks(tasks, availableHours) {
   if (!tasks || tasks.length === 0) {
     return { selectedTasks: [], totalImpact: 0, totalHours: 0 };
@@ -17,10 +6,8 @@ function optimizeTasks(tasks, availableHours) {
   const n = tasks.length;
   const capacity = Math.floor(availableHours);
   
-  // Create DP table
   const dp = Array(n + 1).fill(null).map(() => Array(capacity + 1).fill(0));
 
-  // Fill DP table
   for (let i = 1; i <= n; i++) {
     const task = tasks[i - 1];
     const duration = task.Duration;
@@ -34,7 +21,6 @@ function optimizeTasks(tasks, availableHours) {
     }
   }
 
-  // Backtrack to find selected tasks
   const selectedTasks = [];
   let w = capacity;
   for (let i = n; i > 0 && w > 0; i--) {
