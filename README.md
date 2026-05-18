@@ -18,6 +18,57 @@ Runs on port 3000.
 - `notification_app_be/` - Notification ranking
 - `server.js` - Main server file
 
+## Registration & Authentication
+
+### 1. Register with Affordmed
+
+Send student details to register:
+
+```
+POST http://4.224.186.213/evaluation-service/register
+
+Body:
+{
+  "email": "naveensrinivas145@gmail.com",
+  "rollNo": "23CSR145",
+  "name": "Naveen",
+  "mobileNo": "6379453853",
+  "githubUsername": "Naveen145-ai",
+  "accessCode": "RyZBcy"
+}
+
+Response (200 OK):
+{
+  "clientID": "b0b55d5f-8f16-40e2-a536-d4d80cedfb54",
+  "clientSecret": "XRUPAfbgZXhYNjZC"
+}
+```
+
+Save the `clientID` and `clientSecret` for next step.
+
+### 2. Get Authorization Token
+
+Use the credentials from registration to get token:
+
+```
+POST http://4.224.186.213/evaluation-service/auth
+
+Body:
+{
+  "clientID": "b0b55d5f-8f16-40e2-a536-d4d80cedfb54",
+  "clientSecret": "XRUPAfbgZXhYNjZC",
+  "name": "Naveen"
+}
+
+Response (200 OK):
+{
+  "token": "your-auth-token-here",
+  "expiresIn": 3600
+}
+```
+
+Use this token for API calls requiring authentication.
+
 ## APIs
 
 ### 1. Vehicle Optimization
